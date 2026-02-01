@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chá de Revelação - Ian e Bruna</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            font-family: 'Arial Rounded MT Bold', sans-serif;
+            overflow: hidden;
+        }
+
+        /* ANIMAÇÃO DO GRADIENTE (AZUL E ROSA) */
+        @keyframes flowGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* TELA DE CONVITE */
+        #invite-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #e0e0e0; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 200; transition: all 1s ease;
+        }
+        .envelope { font-size: 100px; cursor: pointer; transition: 0.3s; }
+
+        /* TELA DE BOAS VINDAS (ALTERNA ENTRE ROSA E AZUL) */
+        #welcome-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            /* Mistura de Rosa Choque e Azul Royal */
+            background: linear-gradient(-45deg, #1E90FF, #FF1493, #00BFFF, #FF69B4);
+            background-size: 400% 400%; animation: flowGradient 6s ease infinite;
+            display: flex; justify-content: center; align-items: center; z-index: 100; transition: opacity 1s ease;
+        }
+
+        .card { background: rgba(255, 255, 255, 0.95); padding: 50px; border-radius: 30px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.2); }
+        .btn-neutro { background-color: #f0f0f0; color: #777; border: 1px solid #ddd; padding: 18px 45px; border-radius: 50px; cursor: pointer; font-weight: bold; }
+
+        /* TELA DO JOGO */
+        #game-screen {
+            height: 100vh; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; position: relative;
+            background-color: #ffffff; transition: background 2s ease;
+        }
+
+        /* BRILHO ATRÁS DA REVELAÇÃO */
+        #light-glow {
+            position: absolute; width: 450px; height: 450px;
+            background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%; opacity: 0; transition: opacity 2s ease; z-index: 1;
+        }
+
+        .drum { font-size: 140px; cursor: pointer; user-select: none; z-index: 2; position: relative; }
+        .shaking { animation: shake 0.1s infinite; }
+        @keyframes shake {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(8deg); }
+            75% { transform: rotate(-8deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        /* FUNDO FINAL: TOTALMENTE ROSA (MENINA) */
+        .is-girl { 
+            background: linear-gradient(135deg, #FF1493, #FF69B4, #DB7093) !important;
+            background-size: 400% 400% !important;
+            animation: flowGradient 3s ease infinite !important;
+        }
+
+        .reveal-anim { animation: pulse 1.5s infinite ease-in-out; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+
+        h1 { color: #333; text-align: center; z-index: 2; position: relative; }
+        .text-glow { color: white !important; text-shadow: 0 0 20px rgba(255,255,255,0.8), 0 4px 10px rgba(0,0,0,0.3); }
+        .hidden { opacity: 0; pointer-events: none; transform: translateY(-100%); }
+    </style>
+</head>
+<body>
+
+    <audio id="bg-music" loop><source src="musica_fundo.mp3" type="audio/mpeg"></audio>
+    <audio id="drum-sound"><source src="tambor_revelacao.mp3" type="audio/mpeg"></audio>
+    <audio id="celebration-sound"><source src="comemoracao.mp3" type="audio/mpeg"></audio>
+
+    <div id="invite-screen" onclick="abrirConvite()">
+        <div class="envelope">✉️</div>
+        <h2 style="color: #888;">ABRIR CONVITE</h2>
+    </div>
+
+    <div id="welcome-screen">
+        <div class="card">
+            <h1>Chá de Revelação<br>Ian & Bruna</h1>
+            <button class="btn-neutro" onclick="entrar()">Entrar na Festa</button>
+        </div>
+    </div>
+
+    <div id="game-screen">
+        <div id="light-glow"></div>
+        <div id="icon" class="drum" onclick="rufar()">🥁</div>
+        <h1 id="msg">Toque no tambor!</h1>
+    </div>
+
+    <script>
+        const bgMusic = document.getElementById('bg-music');
+        const drumSound = document.getElementById('drum-sound');
+        const celebrationSound = document.getElementById('celebration-sound');
+
+        function abrirConvite() {
+            document.getElementById('invite-screen').classList.add('hidden');
+            bgMusic.volume = 0.15;
+            bgMusic.play();
+        }
+
+        function entrar() {
+            document.getElementById('welcome-screen').style.opacity = '0';
+            setTimeout(() => document.getElementById('welcome-screen').classList.add('hidden'), 1000);
+            fadeOutMusic(bgMusic, 1000);
+        }
+
+        function fadeOutMusic(audio, duration) {
+            const step = audio.volume / (duration / 50);
+            const interval = setInterval(() => {
+                if (audio.volume > step) audio.volume -= step;
+                else { audio.volume = 0; audio.pause(); clearInterval(interval); }
+            }, 50);
+        }
+
+        function rufar() {
+            const icon = document.getElementById('icon');
+            const msg = document.getElementById('msg');
+            icon.onclick = null;
+            icon.classList.add('shaking');
+            msg.innerHTML = "O coração está batendo forte...";
+            drumSound.play();
+            setTimeout(revelar, 5000);
+        }
+
+        function revelar() {
+            const icon = document.getElementById('icon');
+            const msg = document.getElementById('msg');
+            const screen = document.getElementById('game-screen');
+            const glow = document.getElementById('light-glow');
+
+            icon.classList.remove('shaking');
+            icon.classList.add('reveal-anim');
+            icon.innerHTML = "👧"; 
+            
+            celebrationSound.play();
+            glow.style.opacity = "1";
+            screen.classList.add('is-girl');
+            
+            msg.innerHTML = "É A LUÍSA!";
+            msg.classList.add('text-glow');
+            msg.style.fontSize = "4rem";
+
+            var end = Date.now() + (8 * 1000);
+            (function frame() {
+                confetti({ particleCount: 7, angle: 60, spread: 70, origin: { x: 0, y: 0.6 }, colors: ['#FF69B4', '#FFB6C1', '#ffffff'] });
+                confetti({ particleCount: 7, angle: 120, spread: 70, origin: { x: 1, y: 0.6 }, colors: ['#FF69B4', '#FFB6C1', '#ffffff'] });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+        }
+    </script>
+</body>
+</html>

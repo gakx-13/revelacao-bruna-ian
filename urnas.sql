@@ -1,0 +1,6 @@
+CREATE DATABASE cha_revelacao;
+USE cha_revelacao;
+CREATE TABLE acessos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    data_revelacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
